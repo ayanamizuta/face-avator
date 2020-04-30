@@ -3,3 +3,6 @@ dist
 resource
 weights
 .cache
+
+
+*.vrm

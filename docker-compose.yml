@@ -1,0 +1,27 @@
+version: '3'
+services:
+  https:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - '443:443'
+    environment:
+      PORT: "8000"
+      HOST_IP: "192.168.0.2"
+    volumes:
+        - ./nginx.conf.template:/etc/nginx/nginx.conf.template
+    restart: always
+    links:
+      - avator
+  avator:
+    image: python:3.7
+    volumes:
+        - ./:/app/
+    command: python -m http.server 8000
+    ports:
+      - "8000:8000"
+  openface:
+    image: algebr/openface:latest
+    tty: true
+    

@@ -1,0 +1,22 @@
+version: '3'
+services:
+  https:
+    image: steveltn/https-portal:1
+    container_name: https_portal
+    ports:
+      - '80:80'
+      - '443:443'
+    environment:
+      DOMAINS: 'avatar-tutorial.local -> http://avator:8000'
+      STAGE: local
+    restart: always
+    links:
+      - avator
+  avator:
+    image: python:3.7
+    volumes:
+        - ./:/app/
+    command: python3 -m http.server 8000
+    ports:
+      - "8000:8000"
+    

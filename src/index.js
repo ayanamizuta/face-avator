@@ -2,7 +2,6 @@ import * as THREE from 'three'
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader'
 import { VRM, VRMSchema } from '@pixiv/three-vrm'
 import * as faceapi from 'face-api.js'
-import Peer from 'skyway-js';
 
 (async () => {
   const width = 1024
@@ -14,8 +13,6 @@ import Peer from 'skyway-js';
   const light = new THREE.DirectionalLight(0xffffff, 1)
   const $video = document.getElementById('webcam-video')
   const $landmarkCanvas = document.getElementById('landmarks')
-  const API_KEY = '__YOUR_API_KEY__'
-  const isJoined = false
   let blinking = false
   let smiling = false
   let vrm
@@ -26,7 +23,7 @@ import Peer from 'skyway-js';
   // three.js settings
   renderer.setClearColor(0xeeeeee)
   renderer.setSize(width, height)
-  camera.position.set(0.0, 1.35, 0.8)
+  camera.position.set(0.0, 1.75, 0.8)
   light.position.set(0, 100, 30)
   scene.add(light)
   const $body = document.querySelector('body')
@@ -42,9 +39,9 @@ import Peer from 'skyway-js';
   $video.srcObject = await navigator.mediaDevices.getUserMedia({ video: true })
   $video.play().then(async () => {
     // Load learned models
-    await faceapi.nets.tinyFaceDetector.load('/weights')
-    await faceapi.loadFaceLandmarkModel('/weights')
-    await faceapi.loadFaceExpressionModel('/weights')
+    await faceapi.nets.tinyFaceDetector.load('./weights')
+    await faceapi.loadFaceLandmarkModel('./weights')
+    await faceapi.loadFaceExpressionModel('./weights')
     const loop = async () => {
       if (!faceapi.nets.tinyFaceDetector.params) {
         return setTimeout(() => loop())
@@ -82,9 +79,14 @@ import Peer from 'skyway-js';
 
   // VRM Settings
   loader.load(
-    './resource/three-vrm-girl.vrm',
+    //'./8692684840230369536.vrm',
+    './3004344991193211581.vrm',
     async (gltf) => {
-      vrm = await VRM.from(gltf)
+      try {
+        vrm = await VRM.from(gltf)
+      } catch(e) {
+        console.log(e)
+      }
       scene.add(vrm.scene)
       vrm.humanoid.getBoneNode(VRMSchema.HumanoidBoneName.Hips).rotation.y = Math.PI
     },
@@ -143,6 +145,7 @@ import Peer from 'skyway-js';
       vrm.humanoid.getBoneNode(VRMSchema.HumanoidBoneName.RightUpperArm).rotation.z = -Math.PI / 3
 
       // update vrm
+      console.log(deltaTime)
       vrm.update(deltaTime)
     }
     renderer.render(scene, camera)
@@ -171,37 +174,4 @@ import Peer from 'skyway-js';
   //     }
   //   }
   // })
-
-  // SkyWay(WebRTC)
-  const peer = new Peer({
-    key: API_KEY
-  })
-  peer.on('open', pid => {
-    console.log(`PeerId: ${pid}`)
-    document.getElementById('js-room-join-button').addEventListener('click', async () => {
-      const roomName = document.getElementById('js-room-name-input').value.trim()
-      if (isJoined) {
-        return
-      }
-      if (roomName === '') {
-        return console.warn('Input room name')
-      }
-      if (!vrm) {
-        return console.warn("A VRM hasn't been loaded yet")
-      }
-      const $avatarCanvas = document.querySelector('#avatar-canvas')
-      const stream = $avatarCanvas.captureStream(30)
-      const audioStream = await navigator.mediaDevices.getUserMedia({ audio: true })
-      const audioTrack = audioStream.getAudioTracks()[0]
-      stream.addTrack(audioTrack)
-      const room = peer.joinRoom(roomName, {
-        mode: 'sfu',
-        stream
-      })
-      room.on('open', () => {
-        console.log(`join: ${room.name}`)
-        // your code
-      })
-    })
-  })
 })()
