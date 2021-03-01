@@ -13,7 +13,7 @@
   "dependencies": {
     "@pixiv/three-vrm": "^0.3.4",
     "face-api.js": "^0.22.2",
-    "three": "^0.109.0",
+    "three": "^0.125.0",
     "three-orbitcontrols-ts": "^0.1.2"
   },
   "devDependencies": {
